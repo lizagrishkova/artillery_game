@@ -75,3 +75,4 @@ if gr.check_collision(sh):
     gr.explode(sh)
 
 mainloop()
+
