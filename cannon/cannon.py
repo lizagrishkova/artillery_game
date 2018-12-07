@@ -9,11 +9,6 @@ shell_radius = 5
 dt = 0.1  # физический шаг времени между кадрами обсчёта
 g = -9.8
 
-def screen(physical_x, physical_y):
-    screen_x = physical_x
-    screen_y = screen_height - physical_y
-    return screen_x, screen_y
-
 
 class Shell:
     def __init__(self, x, y, r, Vx, Vy, canvas):
@@ -21,8 +16,8 @@ class Shell:
         self.x, self.y, self.r = x, y, r
         self.Vx, self.Vy = Vx, Vy
         self.canvas = canvas
-        self.avatar = self.canvas.create_oval(screen(x - r, y - r),
-                                         screen(x + r, y + r), fill=color)
+        self.avatar = self.canvas.create_oval(x - r, screen_height - (y - r),
+                                              x + r, screen_height - (y + r), fill=color)
 
     """ Метод move описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения 
            self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
@@ -42,8 +37,8 @@ class Shell:
             self.Vx = -self.Vx
             self.x = screen_width - self.r - 1
 
-        x1, y1 = screen(self.x - self.r, self.y - self.r)
-        x2, y2 = screen(self.x + self.r, self.y + self.r)
+        x1, y1 = self.x - self.r, screen_height - (self.y - self.r)
+        x2, y2 = self.x + self.r, screen_height - (self.y + self.r)
         self.canvas.coords(self.avatar, x1, y1, x2, y2)
 
 
@@ -55,9 +50,9 @@ class Cannon:
         self.length_x = 0
         self.length_y = 20
         self.canvas = canvas
-        self.line = self.canvas.create_line(screen(self.x, self.y),
-                                       screen(self.x + self.length_x, self.y + self.length_y),
-                                       width=5, fill='red')
+        self.line = self.canvas.create_line(self.x, screen_height - self.y,
+                                            self.x + self.length_x, screen_height - (self.y + self.length_y),
+                                            width=5, fill='red')
 
     def target(self, x, y):
         self.length_x = (x - self.x)
@@ -66,8 +61,8 @@ class Cannon:
         self.length_x = self.max_cannon_length * self.length_x / l
         self.length_y = self.max_cannon_length * self.length_y / l
 
-        x1, y1 = screen(self.x, self.y)
-        x2, y2 = screen(self.x + self.length_x, self.y + self.length_y)
+        x1, y1 = self.x, screen_height - self.y
+        x2, y2 = self.x + self.length_x, screen_height - (self.y + self.length_y)
         self.canvas.coords(self.line, x1, y1, x2, y2)
 
     def shoot(self, x, y):
