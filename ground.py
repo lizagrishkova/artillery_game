@@ -9,24 +9,24 @@ root.geometry('800x600')
 canvas = Canvas(root, bg='white')
 canvas.pack(fill=BOTH, expand=1)
 
-WIDTH = 800
-HEIGHT = 600
+screen_width = 800
+screen_height = 600
 
 
 class Shell:
     def __init__(self):
         self.x = 50
-        self.y = 500
-        self.r = 20
+        self.y = screen_height - 50
+        self.r = 30
 
 
 class Ground:
 
     def __init__(self):
         self.height = list()
-        self.min_height = 400
-        self.max_height = 500
-        self.dx = int(WIDTH)
+        self.min_height = screen_height - 500
+        self.max_height = screen_height - 400
+        self.dx = int(screen_width)
         self.generate()
 
     """
@@ -35,33 +35,36 @@ class Ground:
     def generate(self):
         height = random.randint(self.min_height, self.max_height)
         for i in range(800):
-            self.height.append(height)
-            dh = random.randint(-2, 2)
+            self.height.append(screen_height - height)
+            dh = random.randint(-3, 3)
             height += dh
 
     """
         Функция отрисовывает землю по списку высот
     """
     def draw(self):
+        canvas.create_rectangle(0, 0, 800, 600, fill='white')
         for i in range(800):
-            canvas.create_line(i, HEIGHT, i+1, self.height[i], width=5, fill='red')
+            canvas.create_line(i, screen_height, i, self.height[i], width=5, fill='green')
     """
         Функция проверяет столкновение снаяряда с землей
     """
     def check_collision(self, shell):
-        return abs(shell.y - self.height[round(shell.x)]) <= shell.r
+        return (screen_height - (shell.y - shell.r)) <= self.height[round(shell.x)]
 
     """
         Функция уменьшает координаты столбиков земли в радиусе поражения снаряда
     """
     def explode(self, shell):
         damage = shell.r*2
-        left_x = round(shell.x - damage)
-        right_x = round(shell.x + damage)
+        left_x = round(max(0, round(shell.x - damage)))
+        right_x = round(min(screen_width, round(shell.x + damage)))
         for i in range(left_x, right_x):
-            dx = round(shell.x - i)  # расстояние от точки удара до i столбика земли
-            dy = math.sqrt(damage * damage - dx * dx)
-            self.height[i] = shell.x + dy
+            if i != round(shell.x):
+                dx = abs(shell.x - i)  # расстояние от точки удара до i столбика земли
+                dy = (damage**2 - dx**2)**0.5
+                self.height[i] = round(self.height[round(shell.x)] + dy)
+        self.height[round(shell.x)] += damage
         self.draw()
 
 
@@ -69,6 +72,6 @@ gr = Ground()
 gr.draw()
 sh = Shell()
 if gr.check_collision(sh):
-    gr.explode()
+    gr.explode(sh)
 
 mainloop()
