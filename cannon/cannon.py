@@ -2,6 +2,7 @@ from math import *
 from tkinter import *
 from random import *
 
+
 screen_width = 800
 screen_height = 600
 shell_radius = 5
@@ -12,12 +13,6 @@ def screen(physical_x, physical_y):
     screen_x = physical_x
     screen_y = screen_height - physical_y
     return screen_x, screen_y
-
-
-def physical(screen_x, screen_y):
-    physical_x = screen_x
-    physical_y = screen_height - screen_y
-    return physical_x, physical_y
 
 
 class Shell:
@@ -80,4 +75,3 @@ class Cannon:
         Vx = 1 * self.length_x
         Vy = 1 * self.length_y
         return Shell(self.x + self.length_x, self.y + self.length_y, shell_radius, Vx, Vy, self.canvas)
-
