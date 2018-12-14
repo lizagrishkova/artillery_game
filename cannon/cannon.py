@@ -79,7 +79,7 @@ class Cannon:
         self.length_y = self.max_cannon_length * self.length_y / l
 
         x1, y1 = self.x, screen_height - self.y
-        x2, y2 = self.x + self.length_x, screen_height - (self.y + self.length_y
+        x2, y2 = self.x + self.length_x, screen_height - (self.y + self.length_y)
         # self._canvas.delete('cannon')
         # self.cannon = self._canvas.create_line(x1, y1, x2, y2, width=7, fill='black', tag='cannon')
         self._canvas.coords(self.cannon, x1, y1, x2, y2)
