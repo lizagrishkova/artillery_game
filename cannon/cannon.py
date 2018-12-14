@@ -67,8 +67,8 @@ class Cannon:
         # self.angle = 1
         self.length_x = 0
         self.length_y = -20
-        self.cannon = self._canvas.create_line(self.x, self.y,
-                                               self.x + self.length_x, self.y + self.length_y, width=7, fill='black', tag='cannon')
+        self.cannon = self._canvas.create_line(self.x, screen_height - self.y,
+                                               self.x + self.length_x, screen_height - (self.y + self.length_y, width=7, fill='black', tag='cannon')
 
     def target(self, x, y):
         # получает экранные координаты
@@ -78,8 +78,8 @@ class Cannon:
         self.length_x = self.max_cannon_length * self.length_x / l
         self.length_y = self.max_cannon_length * self.length_y / l
 
-        x1, y1 = self.x, self.y
-        x2, y2 = self.x + self.length_x, self.y + self.length_y
+        x1, y1 = self.x, screen_height - self.y
+        x2, y2 = self.x + self.length_x, screen_height - (self.y + self.length_y
         # self._canvas.delete('cannon')
         # self.cannon = self._canvas.create_line(x1, y1, x2, y2, width=7, fill='black', tag='cannon')
         self._canvas.coords(self.cannon, x1, y1, x2, y2)
