@@ -92,8 +92,7 @@ class Ground:
          Функция отрисовывает землю по списку высот
     """
     def draw(self):
-        # self.canvas.create_rectangle(0, 0, 800, 600, fill='white')
-        self.canvas.delete('ground')
+        self.delete()
         for i in range(800):
             self.canvas.create_line(i, screen_height, screen(i, self.height[i]), width=5, fill='lime green', tag='ground')
     """
@@ -117,3 +116,9 @@ class Ground:
         self.height[round(shell.x)] -= damage
         self.draw()
         shell.destroy()
+
+    def delete(self):
+    """"
+        Функция удаляет землю с экрана
+    """
+        self.canvas.delete('ground')
