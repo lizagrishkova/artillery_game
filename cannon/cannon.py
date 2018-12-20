@@ -18,20 +18,17 @@ def screen(x, y):
 class Ball:
     def __init__(self, x, y, r, Vx, Vy, canvas):
         self.color = choice(colors)
-        # экранные координаты
         self.x, self.y, self.r = x, y, r
         self.Vx, self.Vy = Vx, Vy
         self._canvas = canvas
         self.circle = canvas.create_oval(screen(x - r, y - r), screen(x + r, (y + r)), fill=self.color)
-        self.damage_radius = 40
+        self.damage_radius = 30
         self.damage = 10
 
-    """ Метод move описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения 
-           self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
-               и стен по краям окна (размер окна 800х600).
-    """
-
     def move(self):
+        """
+            Движение снаряда за один кадр перерисовки и отражение от стенок
+        """
         ax = 0
         ay = g
         self.x += self.Vx * dt
@@ -55,10 +52,13 @@ class Ball:
         self._canvas.coords(self.circle, x1, y1, x2, y2)
 
     def check_collision(self, x, y):
-       length = ((self.x - x) ** 2 + (self.y - y) ** 2) ** 0.5
-       return length <= self.r
+        length = ((self.x - x) ** 2 + (self.y - y) ** 2) ** 0.5
+        return length <= self.r
 
     def destroy(self):
+        """
+            Удаление снаряда
+        """
         self._canvas.delete(self.circle)
 
 
@@ -67,26 +67,23 @@ class Cannon:
 
     def __init__(self, x, y, canvas):
         self._canvas = canvas
-        # координаты на экране
         self.x, self.y = x, y
         self.r = cannon_radius
-        # self.power = 10
-        # self.on = 0
-        # self.angle = 1
         self.length_x = 0
         self.length_y = -20
         self.hit_points = 0
         self.miss_points = 0
         self.health = 100
-        self.cannon = self._canvas.create_line(screen(self.x, self.y,),
-                                               screen(self.x + self.length_x, self.y + self.length_y),
-                                               width=7, fill='black', tag='cannon')
-        self.cannon_body = self._canvas.create_oval(screen(self.x - self.r, self.y - self.r),
-                                                    screen(self.x + self.r, self.y + self.r),
-                                                    fill='black', tag='cannon')
+        self.cannon = canvas.create_line(screen(self.x, self.y,),
+                                         screen(self.x + self.length_x, self.y + self.length_y),
+                                         width=7, fill='black', tag='cannon')
+        self.cannon_body = canvas.create_oval(screen(self.x - self.r, self.y - self.r),
+                                              screen(self.x + self.r, self.y + self.r), fill='black', tag='cannon')
 
     def target(self, x, y):
-        # получает экранные координаты
+        """
+            Изменение направления дула пушки на точку x, y
+        """
         self.length_x = (x - self.x)
         self.length_y = (y - self.y)
         length = (self.length_x ** 2 + self.length_y ** 2) ** 0.5
@@ -95,30 +92,27 @@ class Cannon:
 
         x1, y1 = screen(self.x, self.y)
         x2, y2 = screen(self.x + self.length_x, self.y + self.length_y)
-        # self._canvas.delete('cannon')
-        # self.cannon = self._canvas.create_line(x1, y1, x2, y2, width=7, fill='black', tag='cannon')
         self._canvas.coords(self.cannon, x1, y1, x2, y2)
 
-    # еще не дописана
-    def power_up(self):
-        if self.on:
-            if self.power < 100:
-                self.power += 1
-            self._canvas.itemconfig(self.cannon, fill='orange')
-        else:
-            self._canvas.itemconfig(self.cannon, fill='black')
-
     def shoot(self, x, y):
+        """
+            Выстрел пушки; Создается снаряд
+        """
         self.target(x, y)
         Vx = self.length_x*2.3
         Vy = self.length_y*2.3
         return Ball(self.x + self.length_x, self.y + self.length_y, shell_radius, Vx, Vy, self._canvas)
 
     def hit_check(self, shell):
+        """
+            Проверка попадания снаряда в пушку
+        """
         return (shell.x - self.x)**2 + (shell.y - self.y)**2 <= (self.r + shell.r)**2
 
     def redraw(self):
-        self._canvas.delete('cannon')
+        """
+            Отрисовка пушки
+        """
         self.cannon = self._canvas.create_line(screen(self.x, self.y, ),
                                                screen(self.x + self.length_x, self.y + self.length_y),
                                                width=7, fill='black', tag='cannon')
