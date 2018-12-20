@@ -7,6 +7,9 @@ screen_height = 600
 
 
 def screen(x, y):
+    """
+        Перевод координат в экранные
+    """
     return x, screen_height - y
 
 
@@ -78,34 +81,36 @@ class Ground:
         self.canvas = canvas
         self.generate()
 
-    """
-        Генерируется список высот на момент запуска
-    """
     def generate(self):
+        """
+            Генерируется список высот на момент запуска
+        """
         height = random.randint(self.min_height, self.max_height)
         for i in range(800):
             self.height.append(height)
             dh = random.randint(-3, 3)
             height += dh
 
-    """
-         Функция отрисовывает землю по списку высот
-    """
     def draw(self):
+        """
+            Отрисовка земли по списку высот
+        """
         self.delete()
         for i in range(800):
-            self.canvas.create_line(i, screen_height, screen(i, self.height[i]), width=5, fill='lime green', tag='ground')
-    """
-         Функция проверяет столкновение снаяряда с землей
-    """
+            self.canvas.create_line(i, screen_height, screen(i, self.height[i]), width=5,
+                                    fill='lime green', tag='ground')
+
     def check_collision(self, shell):
+        """
+            Проверка столкновения снаряда с землей
+        """
         return (shell.y - shell.r) <= self.height[round(shell.x)]
 
-    """
-         Функция уменьшает координаты столбиков земли в радиусе поражения снаряда
-    """
     def explode(self, shell):
-        damage = shell.r*2
+        """
+            Уменьшение высот столбиков земли в радиусе поражения снаряда
+        """
+        damage = shell.damage_radius*1.2
         left_x = round(max(0, round(shell.x - damage)))
         right_x = round(min(screen_width, round(shell.x + damage)))
         for i in range(left_x, right_x):
@@ -118,7 +123,7 @@ class Ground:
         shell.destroy()
 
     def delete(self):
-    """"
-        Функция удаляет землю с экрана
-    """
+        """"
+            Функция удаляет землю с экрана
+        """
         self.canvas.delete('ground')
