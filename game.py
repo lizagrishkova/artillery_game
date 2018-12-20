@@ -9,6 +9,7 @@ from enum import Enum
 sleep_time = 50
 screen_width = 800
 screen_height = 600
+cannon_radius = 20
 shell_radius = 5
 dt = 10  # физический шаг времени между кадрами обсчёта
 g = -9.8
@@ -36,18 +37,28 @@ class Start_game():
         self.ground = Ground(canvas)
         self.ground.draw()
 
-        x = randint(10, 385)
+        x = randint(30, 350)
         y = self.ground.height[round(x)]
-        self.gamer1 = Cannon(x, y, canvas)
-        self.cannons.append(Cannon(x, y, canvas))
+        self.gamer1 = Cannon(x, y + cannon_radius, canvas)
+        self.cannons.append(Cannon(x, y + cannon_radius, canvas))
 
-        x = randint(385, 770)
+        x = randint(400, 770)
         y = self.ground.height[round(x)]
-        self.gamer2 = Cannon(x, y, canvas)
-        self.cannons.append(Cannon(x, y, canvas))
+        self.gamer2 = Cannon(x, y + cannon_radius, canvas)
+        self.cannons.append(Cannon(x, y + cannon_radius, canvas))
 
         self.current_player = 0
         self.shells = []
+
+        canvas.create_text(55, 25, text="Попадания", font='Arial 15')
+        canvas.create_text(115, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
+        canvas.create_text(55, 50, text="Здоровье", font='Arial 15')
+        canvas.create_text(115, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
+
+        canvas.create_text(710, 25, text="Попадания", font='Arial 15')
+        canvas.create_text(770, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
+        canvas.create_text(710, 50, text="Здоровье", font='Arial 15')
+        canvas.create_text(770, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
 
         canvas.bind("<Button-1>", self.mouse_click)
         canvas.bind("<Motion>", self.mouse_motion)
@@ -74,6 +85,23 @@ class Start_game():
 
         self.current_player = (self.current_player + 1) % 2
 
+    def change_text(self, cannon_number):
+        canvas.delete('text')
+        cannon = self.cannons[cannon_number]
+        inactive_cannon = self.cannons[(cannon_number + 1) % 2]
+        cannon.score += 1
+        inactive_cannon.health -= 15
+        canvas.create_text(770, 25, text=self.cannons[1].score, font='Arial 15', tag='text')
+        canvas.create_text(770, 50, text=self.cannons[1].health, font='Arial 15', tag='text')
+
+        canvas.create_text(115, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
+        canvas.create_text(115, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
+
+    # def fall_on_ground(self, cannon_number, x, y):
+        # if abs(self.ground.height[x] - y) >= self.cannons[cannon_number].r:
+            # self.cannons[cannon_number].y = self.ground.height[x] + self.cannons[cannon_number].r
+            # self.cannons[cannon_number].redraw(x, self.ground.height[x])
+
     def shell_flying(self, *ignore):
         if self.game_state != GameState.SHELL_IS_FLYING:
             return
@@ -82,10 +110,24 @@ class Start_game():
         for shell in self.shells:
             shell.move()
 
+        inactive_cannon = (self.current_player + 1) % 2
+        cannon = self.cannons[self.current_player]
         for shell in self.shells:
             if self.ground.check_collision(shell):
                 self.ground.explode(shell)
                 self.game_state = GameState.TANK_IS_AIMING
+                # self.fall_on_ground(self.current_player, cannon.x, cannon.y)
+                break
+            if cannon.hit_check(shell):
+                self.change_text(inactive_cannon)
+                self.game_state = GameState.TANK_IS_AIMING
+                shell.destroy()
+                if cannon.health <= 0:
+                    canvas.delete('all')
+                    canvas.create_rectangle(0, 0, 800, 600, fill='Powder blue')
+                    canvas.delete('ground')
+                    canvas.create_text(100, 25, text="Игра окончена", font='Arial 15')
+                break
         if self.game_state != GameState.SHELL_IS_FLYING:
             self.shells.clear()
 
