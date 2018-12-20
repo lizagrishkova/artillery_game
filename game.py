@@ -13,7 +13,7 @@ cannon_radius = 20
 shell_radius = 5
 dt = 10  # физический шаг времени между кадрами обсчёта
 g = -9.8
-colors = ['red', 'orange', 'yellow', 'green', 'blue', 'gray', 'black', 'cyan', 'pink', 'magenta']
+colors = ['red', 'orange', 'yellow', 'green', 'blue', 'gray', 'cyan', 'pink', 'magenta', 'SeaGreen1', 'violet red']
 
 
 class GameState(Enum):
@@ -22,60 +22,71 @@ class GameState(Enum):
 
 
 def screen(x, y):
+    """
+        Перевод координат в экранные
+    """
     return x, screen_height - y
 
 
 class Start_game():
-    def __init__(self, root):
-        global canvas
-        canvas = Canvas(root)
-        canvas["width"] = screen_width
-        canvas["height"] = screen_height
-        canvas.pack()
+
+    def __init__(self, root, canvas):
+
+        self.canvas = canvas
+        self.canvas["width"] = screen_width
+        self.canvas["height"] = screen_height
+        self.canvas.pack()
         self.cannons = []
-        Background(canvas)
-        self.ground = Ground(canvas)
+        Background(self.canvas)
+        self.ground = Ground(self.canvas)
         self.ground.draw()
 
-        x = randint(30, 350)
+        # Создание первой пушки
+        x = randint(70, 350)
         y = self.ground.height[round(x)]
-        self.gamer1 = Cannon(x, y + cannon_radius, canvas)
-        self.cannons.append(Cannon(x, y + cannon_radius, canvas))
+        self.gamer1 = Cannon(x, y + cannon_radius, self.canvas)
+        self.cannons.append(self.gamer1)
 
-        x = randint(400, 770)
+        # Создание второй пушки
+        x = randint(400, 700)
         y = self.ground.height[round(x)]
-        self.gamer2 = Cannon(x, y + cannon_radius, canvas)
-        self.cannons.append(Cannon(x, y + cannon_radius, canvas))
+        self.gamer2 = Cannon(x, y + cannon_radius, self.canvas)
+        self.cannons.append(self.gamer2)
 
         self.current_player = 0
         self.shells = []
 
-        canvas.create_text(55, 25, text="Попадания:", font='Arial 15')
-        canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
-        canvas.create_text(55, 50, text="Промахи:", font='Arial 15')
-        canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
-        canvas.create_text(55, 75, text="Здоровье:", font='Arial 15')
-        canvas.create_text(120, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
+        self.canvas.create_text(55, 25, text="Попадания:", font='Arial 15')
+        self.canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
+        self.canvas.create_text(55, 50, text="Промахи:", font='Arial 15')
+        self.canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
+        self.canvas.create_text(50, 75, text="Здоровье:", font='Arial 15')
+        self.canvas.create_text(120, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
 
-        canvas.create_text(710, 25, text="Попадания:", font='Arial 15')
-        canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
-        canvas.create_text(710, 50, text="Промахи:", font='Arial 15')
-        canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
-        canvas.create_text(710, 75, text="Здоровье:", font='Arial 15')
-        canvas.create_text(775, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
+        self.canvas.create_text(710, 25, text="Попадания:", font='Arial 15')
+        self.canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
+        self.canvas.create_text(710, 50, text="Промахи:", font='Arial 15')
+        self.canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
+        self.canvas.create_text(710, 75, text="Здоровье:", font='Arial 15')
+        self.canvas.create_text(775, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
 
-        canvas.bind("<Button-1>", self.mouse_click)
-        canvas.bind("<Motion>", self.mouse_motion)
-        # root.bind('<Key>', self.move)
+        self.canvas.bind("<Button-1>", self.mouse_click)
+        self.canvas.bind("<Motion>", self.mouse_motion)
         self.game_state = GameState.TANK_IS_AIMING
 
     def mouse_motion(self, event):
+        """
+            Обработка движения мышки
+        """
         if self.game_state != GameState.TANK_IS_AIMING:
             return
         cannon = self.cannons[self.current_player]
         cannon.target(event.x, screen_height - event.y)
 
     def mouse_click(self, event):
+        """
+           Обработка клика мышки
+        """
         if self.game_state != GameState.TANK_IS_AIMING:
             return
         cannon = self.cannons[self.current_player]
@@ -85,63 +96,70 @@ class Start_game():
         self.shells.append(shell)
 
         self.game_state = GameState.SHELL_IS_FLYING
-        canvas.after(sleep_time, self.shell_flying)
+        self.canvas.after(sleep_time, self.shell_flying)
 
         self.current_player = (self.current_player + 1) % 2
 
     def change_hit_points(self, cannon_number):
         """
-           Функция обрабатывает изменение количества попаданий
+           Обработка изменения количества попаданий
         """
-        canvas.delete('hit_points')
+        self.canvas.delete('hit_points')
         cannon = self.cannons[cannon_number]
         cannon.hit_points += 1
-        canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
-        canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
+        self.canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
+        self.canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
 
     def change_miss_points(self, cannon_number):
         """
-            Функция обрабатывает изменение количества промахов
+            Обработка изменения количества промахов
         """
-        canvas.delete('miss_points')
+        self.canvas.delete('miss_points')
         cannon = self.cannons[cannon_number]
         cannon.miss_points += 1
-        canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
-        canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
+        self.canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
+        self.canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
 
     def change_health(self, cannon_number):
         """
-            Функция обрабатывает изменение здоровья
+            Обработка изменения здоровья
         """
-        canvas.delete('health')
+        self.canvas.delete('health')
         cannon = self.cannons[cannon_number]
-        cannon.health -= 15
-        canvas.create_text(770, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
-        canvas.create_text(115, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
+        cannon.health -= 7*randint(2, 4)
+        self.canvas.create_text(770, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
+        self.canvas.create_text(115, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
 
     def fall_on_ground(self, cannon):
+        """
+            Перемещение пушку на землю при ее взрыве
+        """
         if abs(self.ground.height[cannon.x] - cannon.y) >= cannon.r:
             cannon.y = self.ground.height[cannon.x] + cannon.r
+            self.canvas.delete(cannon.cannon)
+            self.canvas.delete(cannon.cannon_body)
             cannon.redraw()
-            # self.cannons[cannon_number].y = self.ground.height[x] + self.cannons[cannon_number].r
-            # self.cannons[cannon_number].redraw(x, self.ground.height[x])
 
     def end_game(self, cannon, player):
         """
-            Функция выводит экран завершения игры
+            Выводится экран завершения игры
         """
-        canvas.delete('all')
-        canvas.create_rectangle(0, 0, 800, 600, fill='Powder blue')
-        canvas.delete('ground')
-        canvas.create_text(400, 250, text="Игра окончена", font='Arial 15')
-        canvas.create_text(400, 300, text="Победил игрок "+str(player + 1), font='Arial 15')
-        canvas.create_text(400, 350, text="Другой игрок убит за "+str(cannon.hit_points)+" попаданий и "
-                                          + str(cannon.miss_points)+" промахов", font='Arial 15')
+        self.canvas.delete('all')
+        self.canvas.create_rectangle(0, 0, 800, 600, fill='Powder blue')
+        self.canvas.delete('ground')
+        self.canvas.create_text(400, 250, text="Игра окончена", font='Arial 15')
+        self.canvas.create_text(400, 300, text="Победил игрок "+str(player + 1), font='Arial 15')
+        self.canvas.create_text(400, 350,
+                                text="Другой игрок убит за "+str(cannon.hit_points)+" попаданий и " +
+                                     str(cannon.miss_points)+" промахов", font='Arial 15')
 
     def shell_flying(self, *ignore):
+        """
+            Регулируется полет снаряда; Обрабатыватся соударение с земле и попадание в пушку другого игрока
+        """
         if self.game_state != GameState.SHELL_IS_FLYING:
             return
-        canvas.after(sleep_time, self.shell_flying)
+        self.canvas.after(sleep_time, self.shell_flying)
 
         for shell in self.shells:
             shell.move()
@@ -154,7 +172,8 @@ class Start_game():
                 self.ground.explode(shell)
                 self.change_miss_points(active_cannon)
                 self.game_state = GameState.TANK_IS_AIMING
-                # self.fall_on_ground(cannon)
+                self.fall_on_ground(self.cannons[active_cannon])
+                self.fall_on_ground(self.cannons[inactive_cannon])
                 break
             if cannon.hit_check(shell):
                 self.change_hit_points(active_cannon)
@@ -169,5 +188,6 @@ class Start_game():
 
 
 root_window = Tk()
-window = Start_game(root_window)
+canvas = Canvas(root_window)
+window = Start_game(root_window, canvas)
 root_window.mainloop()
