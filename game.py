@@ -50,15 +50,19 @@ class Start_game():
         self.current_player = 0
         self.shells = []
 
-        canvas.create_text(55, 25, text="Попадания", font='Arial 15')
-        canvas.create_text(115, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
-        canvas.create_text(55, 50, text="Здоровье", font='Arial 15')
-        canvas.create_text(115, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
+        canvas.create_text(55, 25, text="Попадания:", font='Arial 15')
+        canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
+        canvas.create_text(55, 50, text="Промахи:", font='Arial 15')
+        canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
+        canvas.create_text(55, 75, text="Здоровье:", font='Arial 15')
+        canvas.create_text(120, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
 
-        canvas.create_text(710, 25, text="Попадания", font='Arial 15')
-        canvas.create_text(770, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
-        canvas.create_text(710, 50, text="Здоровье", font='Arial 15')
-        canvas.create_text(770, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
+        canvas.create_text(710, 25, text="Попадания:", font='Arial 15')
+        canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
+        canvas.create_text(710, 50, text="Промахи:", font='Arial 15')
+        canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
+        canvas.create_text(710, 75, text="Здоровье:", font='Arial 15')
+        canvas.create_text(775, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
 
         canvas.bind("<Button-1>", self.mouse_click)
         canvas.bind("<Motion>", self.mouse_motion)
@@ -85,22 +89,54 @@ class Start_game():
 
         self.current_player = (self.current_player + 1) % 2
 
-    def change_text(self, cannon_number):
-        canvas.delete('text')
+    def change_hit_points(self, cannon_number):
+        """
+           Функция обрабатывает изменение количества попаданий
+        """
+        canvas.delete('hit_points')
         cannon = self.cannons[cannon_number]
-        inactive_cannon = self.cannons[(cannon_number + 1) % 2]
-        cannon.score += 1
-        inactive_cannon.health -= 15
-        canvas.create_text(770, 25, text=self.cannons[1].score, font='Arial 15', tag='text')
-        canvas.create_text(770, 50, text=self.cannons[1].health, font='Arial 15', tag='text')
+        cannon.hit_points += 1
+        canvas.create_text(770, 25, text=self.cannons[1].hit_points, font='Arial 15', tag='hit_points')
+        canvas.create_text(115, 25, text=self.cannons[0].hit_points, font='Arial 15', tag='hit_points')
 
-        canvas.create_text(115, 25, text=self.cannons[0].score, font='Arial 15', tag='text')
-        canvas.create_text(115, 50, text=self.cannons[0].health, font='Arial 15', tag='text')
+    def change_miss_points(self, cannon_number):
+        """
+            Функция обрабатывает изменение количества промахов
+        """
+        canvas.delete('miss_points')
+        cannon = self.cannons[cannon_number]
+        cannon.miss_points += 1
+        canvas.create_text(770, 50, text=self.cannons[1].miss_points, font='Arial 15', tag='miss_points')
+        canvas.create_text(115, 50, text=self.cannons[0].miss_points, font='Arial 15', tag='miss_points')
 
-    # def fall_on_ground(self, cannon_number, x, y):
-        # if abs(self.ground.height[x] - y) >= self.cannons[cannon_number].r:
+    def change_health(self, cannon_number):
+        """
+            Функция обрабатывает изменение здоровья
+        """
+        canvas.delete('health')
+        cannon = self.cannons[cannon_number]
+        cannon.health -= 15
+        canvas.create_text(770, 75, text=self.cannons[1].health, font='Arial 15', tag='health')
+        canvas.create_text(115, 75, text=self.cannons[0].health, font='Arial 15', tag='health')
+
+    def fall_on_ground(self, cannon):
+        if abs(self.ground.height[cannon.x] - cannon.y) >= cannon.r:
+            cannon.y = self.ground.height[cannon.x] + cannon.r
+            cannon.redraw()
             # self.cannons[cannon_number].y = self.ground.height[x] + self.cannons[cannon_number].r
             # self.cannons[cannon_number].redraw(x, self.ground.height[x])
+
+    def end_game(self, cannon, player):
+        """
+            Функция выводит экран завершения игры
+        """
+        canvas.delete('all')
+        canvas.create_rectangle(0, 0, 800, 600, fill='Powder blue')
+        canvas.delete('ground')
+        canvas.create_text(400, 250, text="Игра окончена", font='Arial 15')
+        canvas.create_text(400, 300, text="Победил игрок "+str(player + 1), font='Arial 15')
+        canvas.create_text(400, 350, text="Другой игрок убит за "+str(cannon.hit_points)+" попаданий и "
+                                          + str(cannon.miss_points)+" промахов", font='Arial 15')
 
     def shell_flying(self, *ignore):
         if self.game_state != GameState.SHELL_IS_FLYING:
@@ -110,23 +146,23 @@ class Start_game():
         for shell in self.shells:
             shell.move()
 
-        inactive_cannon = (self.current_player + 1) % 2
+        active_cannon = (self.current_player + 1) % 2
+        inactive_cannon = self.current_player
         cannon = self.cannons[self.current_player]
         for shell in self.shells:
             if self.ground.check_collision(shell):
                 self.ground.explode(shell)
+                self.change_miss_points(active_cannon)
                 self.game_state = GameState.TANK_IS_AIMING
-                # self.fall_on_ground(self.current_player, cannon.x, cannon.y)
+                # self.fall_on_ground(cannon)
                 break
             if cannon.hit_check(shell):
-                self.change_text(inactive_cannon)
+                self.change_hit_points(active_cannon)
+                self.change_health(inactive_cannon)
                 self.game_state = GameState.TANK_IS_AIMING
                 shell.destroy()
                 if cannon.health <= 0:
-                    canvas.delete('all')
-                    canvas.create_rectangle(0, 0, 800, 600, fill='Powder blue')
-                    canvas.delete('ground')
-                    canvas.create_text(100, 25, text="Игра окончена", font='Arial 15')
+                    self.end_game(self.cannons[active_cannon], active_cannon)
                 break
         if self.game_state != GameState.SHELL_IS_FLYING:
             self.shells.clear()
