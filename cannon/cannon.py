@@ -75,7 +75,8 @@ class Cannon:
         # self.angle = 1
         self.length_x = 0
         self.length_y = -20
-        self.score = 0
+        self.hit_points = 0
+        self.miss_points = 0
         self.health = 100
         self.cannon = self._canvas.create_line(screen(self.x, self.y,),
                                                screen(self.x + self.length_x, self.y + self.length_y),
@@ -116,11 +117,11 @@ class Cannon:
     def hit_check(self, shell):
         return (shell.x - self.x)**2 + (shell.y - self.y)**2 <= (self.r + shell.r)**2
 
-    def redraw(self, x, y):
+    def redraw(self):
         self._canvas.delete('cannon')
-        self.cannon = self._canvas.create_line(screen(x, y),
-                                               screen(x + self.length_x, y + self.length_y),
+        self.cannon = self._canvas.create_line(screen(self.x, self.y, ),
+                                               screen(self.x + self.length_x, self.y + self.length_y),
                                                width=7, fill='black', tag='cannon')
-        self.cannon_body = self._canvas.create_oval(screen(x - self.r, y - self.r),
-                                                    screen(x + self.r, y + self.r),
+        self.cannon_body = self._canvas.create_oval(screen(self.x - self.r, self.y - self.r),
+                                                    screen(self.x + self.r, self.y + self.r),
                                                     fill='black', tag='cannon')
