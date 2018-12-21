@@ -16,10 +16,10 @@ def screen(x, y):
 
 
 class Ball:
-    def __init__(self, x, y, r, Vx, Vy, canvas):
+    def __init__(self, x, y, r, vx, vy, canvas):
         self.color = choice(colors)
         self.x, self.y, self.r = x, y, r
-        self.Vx, self.Vy = Vx, Vy
+        self.vx, self.vy = vx, vy
         self._canvas = canvas
         self.circle = canvas.create_oval(screen(x - r, y - r), screen(x + r, (y + r)), fill=self.color)
         self.damage_radius = 30
@@ -31,20 +31,20 @@ class Ball:
         """
         ax = 0
         ay = g
-        self.x += self.Vx * dt
-        self.y += self.Vy * dt
-        self.Vx += (ax * dt)*0.99
-        self.Vy += ay * dt
+        self.x += self.vx * dt
+        self.y += self.vy * dt
+        self.vx += (ax * dt)*0.99
+        self.vy += ay * dt
 
         # отражение
         if self.x - self.r <= 0:
-            self.Vx = -self.Vx
+            self.vx = -self.vx
             self.x = self.r + 1
         if self.x + self.r >= screen_width:
-            self.Vx = -self.Vx
+            self.vx = -self.vx
             self.x = screen_width - self.r - 1
         if self.y + self.r <= 0:
-            self.Vy = -self.Vy
+            self.vy = -self.vy
             self.y = self.r + 1
 
         x1, y1 = screen(self.x - self.r, self.y - self.r)
@@ -99,9 +99,9 @@ class Cannon:
             Выстрел пушки; Создается снаряд
         """
         self.target(x, y)
-        Vx = self.length_x*2.3
-        Vy = self.length_y*2.3
-        return Ball(self.x + self.length_x, self.y + self.length_y, shell_radius, Vx, Vy, self._canvas)
+        vx = self.length_x*uniform(1.5, 3)
+        vy = self.length_y*uniform(1.5, 3)
+        return Ball(self.x + self.length_x, self.y + self.length_y, shell_radius, vx, vy, self._canvas)
 
     def hit_check(self, shell):
         """
