@@ -36,6 +36,7 @@ class Start_game():
         self.canvas["width"] = screen_width
         self.canvas["height"] = screen_height
         self.canvas.pack()
+        self.root = root
         self.cannons = []
         Background(self.canvas)
         self.ground = Ground(self.canvas)
@@ -72,6 +73,7 @@ class Start_game():
 
         self.canvas.bind("<Button-1>", self.mouse_click)
         self.canvas.bind("<Motion>", self.mouse_motion)
+        root.bind('<Key>', self.key_move)
         self.game_state = GameState.TANK_IS_AIMING
 
     def mouse_motion(self, event):
@@ -99,6 +101,20 @@ class Start_game():
         self.canvas.after(sleep_time, self.shell_flying)
 
         self.current_player = (self.current_player + 1) % 2
+
+    def key_move(self, event):
+        """
+            Движение пушки кнопками клавиатуры
+        """
+        cannon = self.cannons[self.current_player]
+        if event.keycode == 39:
+            cannon.y = self.ground.height[round(cannon.x) + 1] + cannon.r
+            cannon.x += 1
+            self.fall_on_ground(cannon)
+        elif event.keycode == 37:
+            cannon.y = self.ground.height[round(cannon.x) - 1] + cannon.r
+            cannon.x -= 1
+            self.fall_on_ground(cannon)
 
     def change_hit_points(self, cannon_number):
         """
