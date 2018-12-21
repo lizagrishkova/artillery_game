@@ -65,7 +65,7 @@ class Background:
         for _ in range(3):
             for _ in range(3):
                 self._canvas.create_polygon((x, y), ((2*x + 100)/2, y - 60), (x + 100, y),
-                                           fill='dark green', outline='dark green')
+                                            fill='dark green', outline='dark green')
                 y += 45
             x += 90
             y -= 150
